@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>りくくんとポコポコ青鬼</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: 'Arial', sans-serif;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* UIレイヤー */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* スコア・メッセージ */
+        #message-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            border: 3px solid #FF9800;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        /* デバッグパネル */
+        #debug-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            min-width: 250px;
+            display: none;
+            pointer-events: auto;
+        }
+
+        #debug-panel h3 {
+            margin: 0 0 10px 0;
+            color: #FF9800;
+        }
+
+        .debug-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .debug-section:last-child {
+            border-bottom: none;
+        }
+
+        .debug-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        .debug-slider {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .debug-btn {
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .debug-btn:hover {
+            background: #45a049;
+        }
+
+        .debug-toggle {
+            background: #2196F3;
+        }
+
+        .debug-toggle.active {
+            background: #FF9800;
+        }
+
+        #debug-state-text {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        /* トグルボタン */
+        #debug-toggle-btn {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            pointer-events: auto;
+            font-size: 12px;
+        }
+
+        /* 操作パネル（iPad用） */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            height: 150px;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* ジョイスティックは動的生成するため初期非表示 */
+        .joystick-wrapper {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            pointer-events: auto;
+            display: none;
+        }
+
+        .joystick-base {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .joystick-knob {
+            width: 60px;
+            height: 60px;
+            background: #FF9800;
+            border-radius: 50%;
+            position: absolute;
+            top: 45px;
+            left: 45px;
+            box-shadow: 0 4px 0 #E65100;
+        }
+
+        /* ボタンエリア */
+        #buttons-zone {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .game-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .game-btn:active {
+            transform: translateY(4px);
+        }
+
+        #btn-action {
+            background: #4CAF50;
+        }
+
+        #btn-camera {
+            background: #2196F3;
+            font-size: 14px;
+        }
+
+        /* クイズ・ゲームオーバーオーバーレイ */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: auto;
+            display: none;
+        }
+
+        #overlay-text {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .quiz-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #start-btn {
+            padding: 20px 40px;
+            font-size: 30px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            border-bottom: 5px solid #E65100;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="message-box">ミッション：<br>おもちゃ を かたづけて！</div>
+            
+            <!-- デバッグトグルボタン -->
+            <button id="debug-toggle-btn">🐛 デバッグ</button>
+            
+            <!-- デバッグパネル -->
+            <div id="debug-panel">
+                <h3>🎮 デバッグツール</h3>
+                
+                <div class="debug-section">
+                    <button id="god-mode-btn" class="debug-btn debug-toggle">God Mode: OFF</button>
+                    <button id="skip-mission-btn" class="debug-btn">ミッションスキップ</button>
+                </div>
+                
+                <div class="debug-section">
+                    <label class="debug-label">プレイヤー速度: <span id="player-speed-val">0.15</span></label>
+                    <input type="range" class="debug-slider" id="player-speed" min="0.05" max="0.5" step="0.01" value="0.15">
+                    
+                    <label class="debug-label">敵速度: <span id="enemy-speed-val">0.06</span></label>
+                    <input type="range" class="debug-slider" id="enemy-speed" min="0.01" max="0.3" step="0.01" value="0.06">
+                </div>
+                
+                <div class="debug-section">
+                    <button id="visual-debug-btn" class="debug-btn debug-toggle">視覚デバッグ: OFF</button>
+                    <div id="debug-state-text">状態: 待機中</div>
+                </div>
+            </div>
+
+            <div id="controls">
+                <!-- ジョイスティックは動的生成 -->
+            </div>
+
+            <div id="buttons-zone">
+                <button id="btn-camera" class="game-btn">カメラ<br>きりかえ</button>
+                <button id="btn-action" class="game-btn">✋</button>
+            </div>
+        </div>
+
+        <div id="overlay">
+            <div id="overlay-text">りくくんと<br>ポコポコ青鬼</div>
+            <button id="start-btn">あそぶ！</button>
+            <div id="quiz-options" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIG: 全ての定数をここに集約
+        // ==========================================
+        const CONFIG = {
+            player: {
+                speed: 0.15,
+                radius: 0.4,
+                height: 0.8,
+                color: 0xFF9800
+            },
+            enemy: {
+                speed: 0.06,
+                chaseDistance: 15,
+                handiCapDistance: 3.0,
+                handiCapMultiplier: 0.5,
+                catchDistance: 1.0,
+                color: 0x6A5ACD
+            },
+            world: {
+                mapSize: 10,
+                wallHeight: 3,
+                wallSize: 2,
+                floorColor: 0x8BC34A,
+                wallColor: 0xFFE0B2,
+                skyColor: 0xCDF0FF
+            },
+            camera: {
+                fov: 60,
+                near: 0.1,
+                far: 100,
+                thirdPersonOffset: { x: 0, y: 5, z: 6 },
+                firstPersonOffset: { y: 0.5 }
+            },
+            shadows: {
+                resolution: 2048,
+                bias: -0.001
+            },
+            joystick: {
+                baseSize: 150,
+                knobSize: 60,
+                maxDistance: 45
+            }
+        };
+
+        // ==========================================
+        // テクスチャジェネレーター
+        // ==========================================
+        class TextureGenerator {
+            // 木目テクスチャ
+            static createWoodTexture(width = 256, height = 256) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // ベース色
+                ctx.fillStyle = '#D2691E';
+                ctx.fillRect(0, 0, width, height);
+
+                // 木目パターン
+                for (let i = 0; i < 20; i++) {
+                    ctx.strokeStyle = `rgba(101, 67, 33, ${0.1 + Math.random() * 0.3})`;
+                    ctx.lineWidth = 1 + Math.random() * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(0, Math.random() * height);
+                    for (let x = 0; x < width; x += 10) {
+                        ctx.lineTo(x, Math.random() * height);
+                    }
+                    ctx.stroke();
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                return texture;
+            }
+
+            // 布地テクスチャ
+            static createFabricTexture(baseColor, width = 256, height = 256) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = baseColor;
+                ctx.fillRect(0, 0, width, height);
+
+                // 織り目パターン
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < width; i += 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < height; i += 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(width, i);
+                    ctx.stroke();
+                }
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            // 顔テクスチャ（青鬼用）
+            static createFaceTexture(width = 256, height = 256) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // 背景（肌色）
+                ctx.fillStyle = '#9370DB';
+                ctx.fillRect(0, 0, width, height);
+
+                // 目（白）
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(width * 0.35, height * 0.4, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width * 0.65, height * 0.4, 30, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 瞳
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(width * 0.35, height * 0.4, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width * 0.65, height * 0.4, 12, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 口（笑顔）
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(width * 0.5, height * 0.55, 40, 0, Math.PI);
+                ctx.stroke();
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            // 草地テクスチャ
+            static createGrassTexture(width = 512, height = 512) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // ベース
+                ctx.fillStyle = '#8BC34A';
+                ctx.fillRect(0, 0, width, height);
+
+                // ランダムな草の点
+                for (let i = 0; i < 1000; i++) {
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    const shade = Math.random();
+                    ctx.fillStyle = shade > 0.5 ? '#7CB342' : '#9CCC65';
+                    ctx.fillRect(x, y, 2, 2);
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(10, 10);
+                return texture;
+            }
+        }
+
+        // ==========================================
+        // InputManager: タッチ入力管理
+        // ==========================================
+        class InputManager {
+            constructor() {
+                this.joysticks = []; // 複数のジョイスティックを管理
+                this.activeTouches = new Map(); // touchId -> joystick mapping
+            }
+
+            // ダイナミックジョイスティックの作成
+            createDynamicJoystick(x, y) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'joystick-wrapper';
+                wrapper.style.left = `${x - CONFIG.joystick.baseSize / 2}px`;
+                wrapper.style.top = `${y - CONFIG.joystick.baseSize / 2}px`;
+                wrapper.style.display = 'block';
+
+                const base = document.createElement('div');
+                base.className = 'joystick-base';
+
+                const knob = document.createElement('div');
+                knob.className = 'joystick-knob';
+
+                base.appendChild(knob);
+                wrapper.appendChild(base);
+                document.getElementById('ui-layer').appendChild(wrapper);
+
+                return {
+                    wrapper,
+                    knob,
+                    baseX: x,
+                    baseY: y,
+                    x: 0,
+                    y: 0,
+                    active: true
+                };
+            }
+
+            setupTouchControls() {
+                // 画面左半分でのタッチをジョイスティックとして処理
+                document.addEventListener('touchstart', (e) => {
+                    for (let touch of e.touches) {
+                        // 左半分のみジョイスティック
+                        if (touch.clientX < window.innerWidth / 2) {
+                            if (!this.activeTouches.has(touch.identifier)) {
+                                const joystick = this.createDynamicJoystick(touch.clientX, touch.clientY);
+                                this.activeTouches.set(touch.identifier, joystick);
+                                this.joysticks.push(joystick);
+                            }
+                        }
+                    }
+                }, { passive: true });
+
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    for (let touch of e.touches) {
+                        const joystick = this.activeTouches.get(touch.identifier);
+                        if (joystick) {
+                            const dx = touch.clientX - joystick.baseX;
+                            const dy = touch.clientY - joystick.baseY;
+
+                            const distance = Math.min(CONFIG.joystick.maxDistance, Math.sqrt(dx * dx + dy * dy));
+                            const angle = Math.atan2(dy, dx);
+
+                            joystick.x = (Math.cos(angle) * distance) / CONFIG.joystick.maxDistance;
+                            joystick.y = (Math.sin(angle) * distance) / CONFIG.joystick.maxDistance;
+
+                            joystick.knob.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+                        }
+                    }
+                }, { passive: false });
+
+                const endTouch = (e) => {
+                    for (let touch of e.changedTouches) {
+                        const joystick = this.activeTouches.get(touch.identifier);
+                        if (joystick) {
+                            joystick.wrapper.remove();
+                            this.joysticks = this.joysticks.filter(j => j !== joystick);
+                            this.activeTouches.delete(touch.identifier);
+                        }
+                    }
+                };
+
+                document.addEventListener('touchend', endTouch);
+                document.addEventListener('touchcancel', endTouch);
+            }
+
+            getMovementInput() {
+                // 最初のアクティブなジョイスティックの値を返す
+                if (this.joysticks.length > 0) {
+                    return {
+                        x: this.joysticks[0].x,
+                        y: this.joysticks[0].y,
+                        active: true
+                    };
+                }
+                return { x: 0, y: 0, active: false };
+            }
+        }
+
+        // ==========================================
+        // Player: プレイヤー管理
+        // ==========================================
+        class Player {
+            constructor(scene) {
+                // CapsuleGeometryはr128では使えないため、CylinderGeometryを使用
+                const geo = new THREE.CylinderGeometry(CONFIG.player.radius, CONFIG.player.radius, CONFIG.player.height, 16);
+                const fabricTex = TextureGenerator.createFabricTexture('#FF9800');
+                const mat = new THREE.MeshStandardMaterial({ map: fabricTex });
+                
+                this.mesh = new THREE.Mesh(geo, mat);
+                this.mesh.position.set(0, 0.9, 0);
+                this.mesh.castShadow = true;
+                scene.add(this.mesh);
+
+                this.speed = CONFIG.player.speed;
+            }
+
+            update(input, walls) {
+                if (input.active) {
+                    const moveX = input.x * this.speed;
+                    const moveZ = input.y * this.speed;
+
+                    this.mesh.position.x += moveX;
+                    this.mesh.position.z += moveZ;
+
+                    // 簡易壁判定（マップ境界）
+                    const limit = (CONFIG.world.mapSize - 1) * CONFIG.world.wallSize / 2;
+                    if (Math.abs(this.mesh.position.x) > limit) {
+                        this.mesh.position.x = Math.sign(this.mesh.position.x) * limit;
+                    }
+                    if (Math.abs(this.mesh.position.z) > limit) {
+                        this.mesh.position.z = Math.sign(this.mesh.position.z) * limit;
+                    }
+
+                    this.mesh.lookAt(
+                        this.mesh.position.x + moveX,
+                        this.mesh.position.y,
+                        this.mesh.position.z + moveZ
+                    );
+                }
+            }
+
+            getPosition() {
+                return this.mesh.position;
+            }
+
+            reset() {
+                this.mesh.position.set(0, 0.9, 0);
+            }
+        }
+
+        // ==========================================
+        // Enemy: 敵AI（青鬼）
+        // ==========================================
+        class Enemy {
+            constructor(scene) {
+                this.group = new THREE.Group();
+
+                // 体（テクスチャ適用）
+                const bodyGeo = new THREE.SphereGeometry(0.8, 32, 32);
+                const faceTex = TextureGenerator.createFaceTexture();
+                const bodyMat = new THREE.MeshStandardMaterial({ 
+                    color: CONFIG.enemy.color,
+                    map: faceTex
+                });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.position.y = 1.0;
+                body.scale.set(1, 1.3, 1);
+                body.castShadow = true;
+                this.group.add(body);
+
+                // 目
+                const eyeGeo = new THREE.SphereGeometry(0.2, 16, 16);
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeL.position.set(-0.3, 1.2, 0.6);
+                const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeR.position.set(0.3, 1.2, 0.6);
+                this.group.add(eyeL, eyeR);
+
+                // 瞳
+                const pupilGeo = new THREE.SphereGeometry(0.08, 8, 8);
+                const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+                pupilL.position.set(-0.3, 1.2, 0.75);
+                const pupilR = new THREE.Mesh(pupilGeo, pupilMat);
+                pupilR.position.set(0.3, 1.2, 0.75);
+                this.group.add(pupilL, pupilR);
+
+                this.group.position.set(6, 0, 6);
+                scene.add(this.group);
+
+                this.speed = CONFIG.enemy.speed;
+                this.state = '待機中';
+                this.debugLines = [];
+            }
+
+            update(playerPos, currentMissionPos, walls, scene) {
+                const distToPlayer = this.group.position.distanceTo(playerPos);
+
+                if (distToPlayer < CONFIG.enemy.chaseDistance) {
+                    this.state = '追跡中';
+
+                    // プレイヤーへの方向ベクトル
+                    const dir = new THREE.Vector3().subVectors(playerPos, this.group.position).normalize();
+
+                    // 壁回避ロジック（簡易レイキャスト）
+                    const raycaster = new THREE.Raycaster(this.group.position, dir, 0, 2);
+                    const intersects = raycaster.intersectObjects(walls);
+
+                    if (intersects.length > 0) {
+                        // 壁にぶつかりそうなら横にスライド
+                        const normal = intersects[0].face.normal;
+                        const slideDir = dir.clone().sub(normal.clone().multiplyScalar(dir.dot(normal))).normalize();
+                        dir.copy(slideDir);
+                    }
+
+                    // 手加減ロジック
+                    let currentSpeed = this.speed;
+                    if (currentMissionPos) {
+                        const distToMission = playerPos.distanceTo(currentMissionPos);
+                        if (distToMission < CONFIG.enemy.handiCapDistance) {
+                            currentSpeed *= CONFIG.enemy.handiCapMultiplier;
+                            this.state = '手加減モード';
+                        }
+                    }
+
+                    this.group.position.add(dir.multiplyScalar(currentSpeed));
+                    this.group.lookAt(playerPos);
+
+                    // ピョンピョンアニメーション
+                    this.group.position.y = Math.abs(Math.sin(Date.now() * 0.005)) * 0.5;
+                } else {
+                    this.state = '待機中';
+                }
+            }
+
+            getPosition() {
+                return this.group.position;
+            }
+
+            getState() {
+                return this.state;
+            }
+
+            reset() {
+                this.group.position.set(6, 0, 6);
+            }
+        }
+
+        // ==========================================
+        // DebugPanel: デバッグツール
+        // ==========================================
+        class DebugPanel {
+            constructor(game) {
+                this.game = game;
+                this.godMode = false;
+                this.visualDebug = false;
+                this.debugLines = [];
+
+                this.setupUI();
+            }
+
+            setupUI() {
+                // トグルボタン
+                document.getElementById('debug-toggle-btn').addEventListener('click', () => {
+                    const panel = document.getElementById('debug-panel');
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                });
+
+                // God Mode
+                document.getElementById('god-mode-btn').addEventListener('click', (e) => {
+                    this.godMode = !this.godMode;
+                    e.target.innerText = `God Mode: ${this.godMode ? 'ON' : 'OFF'}`;
+                    e.target.classList.toggle('active');
+                });
+
+                // Mission Skip
+                document.getElementById('skip-mission-btn').addEventListener('click', () => {
+                    this.game.skipMission();
+                });
+
+                // プレイヤー速度スライダー
+                const playerSpeedSlider = document.getElementById('player-speed');
+                playerSpeedSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.game.player.speed = value;
+                    document.getElementById('player-speed-val').innerText = value.toFixed(2);
+                });
+
+                // 敵速度スライダー
+                const enemySpeedSlider = document.getElementById('enemy-speed');
+                enemySpeedSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.game.enemy.speed = value;
+                    document.getElementById('enemy-speed-val').innerText = value.toFixed(2);
+                });
+
+                // Visual Debug
+                document.getElementById('visual-debug-btn').addEventListener('click', (e) => {
+                    this.visualDebug = !this.visualDebug;
+                    e.target.innerText = `視覚デバッグ: ${this.visualDebug ? 'ON' : 'OFF'}`;
+                    e.target.classList.toggle('active');
+                });
+            }
+
+            update() {
+                // 敵の状態を表示
+                document.getElementById('debug-state-text').innerText = `状態: ${this.game.enemy.getState()}`;
+
+                // 視覚デバッグ: レイキャストライン
+                if (this.visualDebug) {
+                    this.clearDebugLines();
+                    this.drawRaycastLine();
+                } else {
+                    this.clearDebugLines();
+                }
+            }
+
+            drawRaycastLine() {
+                const enemyPos = this.game.enemy.getPosition();
+                const playerPos = this.game.player.getPosition();
+
+                const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+                const points = [
+                    new THREE.Vector3(enemyPos.x, enemyPos.y + 1, enemyPos.z),
+                    new THREE.Vector3(playerPos.x, playerPos.y + 0.5, playerPos.z)
+                ];
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geometry, material);
+                
+                this.game.scene.add(line);
+                this.debugLines.push(line);
+            }
+
+            clearDebugLines() {
+                this.debugLines.forEach(line => this.game.scene.remove(line));
+                this.debugLines = [];
+            }
+
+            isGodMode() {
+                return this.godMode;
+            }
+        }
+
+        // ==========================================
+        // Game: メインゲームロジック
+        // ==========================================
+        class Game {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.player = null;
+                this.enemy = null;
+                this.inputManager = null;
+                this.debugPanel = null;
+
+                this.walls = [];
+                this.missions = [];
+                this.missionIndex = 0;
+                this.missionTypes = [
+                    { name: "おもちゃ を かたづけて！", type: "toy", color: 0xFF0000 },
+                    { name: "ハミガキ しよう！", type: "brush", color: 0x0000FF },
+                    { name: "バナナ たべる！", type: "banana", color: 0xFFFF00 },
+                    { name: "ゴール！おふろへ！", type: "bath", color: 0x00FFFF }
+                ];
+
+                this.isThirdPerson = true;
+                this.isGameOver = false;
+                this.isGameClear = false;
+                this.isPaused = true;
+
+                this.doorObject = null;
+
+                this.init();
+            }
+
+            init() {
+                // シーン
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(CONFIG.world.skyColor);
+                this.scene.fog = new THREE.Fog(CONFIG.world.skyColor, 10, 40);
+
+                // カメラ
+                this.camera = new THREE.PerspectiveCamera(
+                    CONFIG.camera.fov,
+                    window.innerWidth / window.innerHeight,
+                    CONFIG.camera.near,
+                    CONFIG.camera.far
+                );
+
+                // レンダラー
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                document.getElementById('game-container').appendChild(this.renderer.domElement);
+
+                // ライト
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+                dirLight.position.set(10, 20, 10);
+                dirLight.castShadow = true;
+                dirLight.shadow.mapSize.width = CONFIG.shadows.resolution;
+                dirLight.shadow.mapSize.height = CONFIG.shadows.resolution;
+                dirLight.shadow.bias = CONFIG.shadows.bias;
+                dirLight.shadow.camera.left = -20;
+                dirLight.shadow.camera.right = 20;
+                dirLight.shadow.camera.top = 20;
+                dirLight.shadow.camera.bottom = -20;
+                this.scene.add(dirLight);
+
+                // 床（テクスチャ適用）
+                const floorGeo = new THREE.PlaneGeometry(100, 100);
+                const grassTex = TextureGenerator.createGrassTexture();
+                const floorMat = new THREE.MeshStandardMaterial({ map: grassTex });
+                const floor = new THREE.Mesh(floorGeo, floorMat);
+                floor.rotation.x = -Math.PI / 2;
+                floor.receiveShadow = true;
+                this.scene.add(floor);
+
+                // 壁生成
+                this.createWalls();
+
+                // プレイヤーと敵
+                this.player = new Player(this.scene);
+                this.enemy = new Enemy(this.scene);
+
+                // ミッション配置
+                this.placeMissions();
+
+                // ドア
+                this.createLockedDoor();
+
+                // 入力管理
+                this.inputManager = new InputManager();
+                this.inputManager.setupTouchControls();
+                this.setupButtons();
+
+                // デバッグパネル
+                this.debugPanel = new DebugPanel(this);
+
+                // スタートボタン
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
+
+                // アニメーションループ
+                this.animate();
+
+                // 初期オーバーレイ表示
+                document.getElementById('overlay').style.display = 'flex';
+            }
+
+            createWalls() {
+                const woodTex = TextureGenerator.createWoodTexture();
+                const wallMat = new THREE.MeshStandardMaterial({ map: woodTex });
+                const wallGeo = new THREE.BoxGeometry(
+                    CONFIG.world.wallSize,
+                    CONFIG.world.wallHeight,
+                    CONFIG.world.wallSize
+                );
+
+                // プロシージャル風の壁配置（迷路マップ）
+                const map = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                    [1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                ];
+
+                for (let z = 0; z < map.length; z++) {
+                    for (let x = 0; x < map[z].length; x++) {
+                        if (map[z][x] === 1) {
+                            const wall = new THREE.Mesh(wallGeo, wallMat);
+                            wall.position.set(
+                                (x - 5) * CONFIG.world.wallSize,
+                                CONFIG.world.wallHeight / 2,
+                                (z - 4) * CONFIG.world.wallSize
+                            );
+                            wall.castShadow = true;
+                            wall.receiveShadow = true;
+                            this.scene.add(wall);
+                            this.walls.push(wall);
+                        }
+                    }
+                }
+            }
+
+            placeMissions() {
+                const positions = [
+                    { x: -6, z: -6 },
+                    { x: 6, z: -6 },
+                    { x: -6, z: 6 },
+                    { x: 0, z: 8 }
+                ];
+
+                for (let i = 0; i < 4; i++) {
+                    const geo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                    const mat = new THREE.MeshStandardMaterial({ color: this.missionTypes[i].color });
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(positions[i].x, 0.5, positions[i].z);
+                    mesh.castShadow = true;
+                    mesh.userData = { id: i, active: true };
+                    this.scene.add(mesh);
+                    this.missions.push(mesh);
+
+                    if (i > 0) mesh.visible = false;
+                }
+            }
+
+            createLockedDoor() {
+                const geo = new THREE.BoxGeometry(2, 3, 0.2);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xFF69B4 });
+                this.doorObject = new THREE.Mesh(geo, mat);
+                this.doorObject.position.set(0, 1.5, 7);
+                this.doorObject.castShadow = true;
+                this.scene.add(this.doorObject);
+                this.walls.push(this.doorObject);
+            }
+
+            setupButtons() {
+                document.getElementById('btn-camera').addEventListener('click', () => {
+                    this.isThirdPerson = !this.isThirdPerson;
+                });
+
+                document.getElementById('btn-action').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.checkAction();
+                });
+            }
+
+            startGame() {
+                document.getElementById('overlay').style.display = 'none';
+                this.isPaused = false;
+                this.isGameOver = false;
+                this.isGameClear = false;
+                this.missionIndex = 0;
+                this.updateMissionDisplay();
+                this.speak("さあ、あそぼう！おもちゃをかたづけてね");
+                this.resetGame();
+            }
+
+            resetGame() {
+                this.player.reset();
+                this.enemy.reset();
+                this.missions.forEach(m => m.visible = false);
+                this.missions[0].visible = true;
+                this.missionIndex = 0;
+                this.doorObject.visible = true;
+                this.doorObject.position.set(0, 1.5, 7);
+            }
+
+            updateMissionDisplay() {
+                if (this.missionIndex < this.missionTypes.length) {
+                    document.getElementById('message-box').innerHTML =
+                        "ミッション：<br>" + this.missionTypes[this.missionIndex].name;
+                    this.missions.forEach(m => m.visible = false);
+                    this.missions[this.missionIndex].visible = true;
+                }
+            }
+
+            checkAction() {
+                if (this.missionIndex < this.missions.length) {
+                    const target = this.missions[this.missionIndex];
+                    const dist = this.player.getPosition().distanceTo(target.position);
+
+                    if (dist < 2.0 && target.visible) {
+                        this.missionIndex++;
+                        this.speak("できた！すごいすごい！");
+
+                        if (this.missionIndex >= this.missionTypes.length) {
+                            this.gameClear();
+                        } else {
+                            this.updateMissionDisplay();
+                            if (this.missionIndex === 3) {
+                                this.startQuiz();
+                            }
+                        }
+                    }
+                }
+            }
+
+            skipMission() {
+                if (this.missionIndex < this.missionTypes.length - 1) {
+                    this.missionIndex++;
+                    this.updateMissionDisplay();
+                    this.speak("ミッションをスキップしました");
+                } else {
+                    this.gameClear();
+                }
+            }
+
+            startQuiz() {
+                this.isPaused = true;
+                const overlay = document.getElementById('overlay');
+                const text = document.getElementById('overlay-text');
+                const options = document.getElementById('quiz-options');
+                const startBtn = document.getElementById('start-btn');
+
+                startBtn.style.display = 'none';
+                overlay.style.display = 'flex';
+                options.style.display = 'block';
+                text.innerHTML = "ピンクのドアがあるよ！<br>「あかいろ」の ボタンはどれ？";
+                this.speak("ピンクのドアがあるよ。あかいろのボタンはどれかな？");
+
+                options.innerHTML = '';
+                const colors = [
+                    { name: 'あか', code: '#FF0000', correct: true },
+                    { name: 'あお', code: '#0000FF', correct: false },
+                    { name: 'きいろ', code: '#FFFF00', correct: false }
+                ];
+
+                colors.sort(() => Math.random() - 0.5);
+
+                colors.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-btn';
+                    btn.style.backgroundColor = c.code;
+                    btn.innerText = c.name;
+                    btn.onclick = () => {
+                        if (c.correct) {
+                            this.speak("せいかい！ドアがあいたよ！");
+                            this.doorObject.visible = false;
+                            this.doorObject.position.y = -10;
+                            this.isPaused = false;
+                            overlay.style.display = 'none';
+                        } else {
+                            this.speak("ちがうよ、もういっかい！");
+                        }
+                    };
+                    options.appendChild(btn);
+                });
+            }
+
+            gameOver() {
+                this.isGameOver = true;
+                this.isPaused = true;
+                const overlay = document.getElementById('overlay');
+                const text = document.getElementById('overlay-text');
+                const startBtn = document.getElementById('start-btn');
+                const options = document.getElementById('quiz-options');
+
+                options.style.display = 'none';
+                startBtn.style.display = 'block';
+                startBtn.innerText = "もういっかい！";
+                text.innerHTML = "つかまっちゃった！<br>イヤイヤしない？";
+                overlay.style.display = 'flex';
+
+                this.speak("イヤイヤしてると、つかまえちゃうぞー？");
+            }
+
+            gameClear() {
+                this.isGameClear = true;
+                this.isPaused = true;
+                const overlay = document.getElementById('overlay');
+                const text = document.getElementById('overlay-text');
+                const startBtn = document.getElementById('start-btn');
+                const options = document.getElementById('quiz-options');
+
+                options.style.display = 'none';
+                startBtn.style.display = 'block';
+                startBtn.innerText = "またあそぶ";
+                text.innerHTML = "クリア！<br>りくくん かっこいい！";
+                overlay.style.display = 'flex';
+
+                this.speak("すごーい！全部できたね！りくくんかっこいい！");
+            }
+
+            speak(text) {
+                if (!window.speechSynthesis) return;
+                const ut = new SpeechSynthesisUtterance(text);
+                ut.lang = 'ja-JP';
+                ut.rate = 1.0;
+                ut.pitch = 1.2;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(ut);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                if (!this.isPaused && !this.isGameOver && !this.isGameClear) {
+                    // プレイヤー更新
+                    const input = this.inputManager.getMovementInput();
+                    this.player.update(input, this.walls);
+
+                    // 敵更新
+                    const currentMissionPos = this.missionIndex < this.missions.length ?
+                        this.missions[this.missionIndex].position : null;
+                    this.enemy.update(this.player.getPosition(), currentMissionPos, this.walls, this.scene);
+
+                    // 当たり判定（God Mode チェック）
+                    const distToEnemy = this.player.getPosition().distanceTo(this.enemy.getPosition());
+                    if (distToEnemy < CONFIG.enemy.catchDistance && !this.debugPanel.isGodMode()) {
+                        this.gameOver();
+                    }
+
+                    // ミッションアイテムの回転
+                    this.missions.forEach(m => {
+                        if (m.visible) {
+                            m.rotation.y += 0.05;
+                            m.rotation.x += 0.02;
+                        }
+                    });
+                }
+
+                // カメラ更新
+                if (this.isThirdPerson) {
+                    const offset = new THREE.Vector3(
+                        CONFIG.camera.thirdPersonOffset.x,
+                        CONFIG.camera.thirdPersonOffset.y,
+                        CONFIG.camera.thirdPersonOffset.z
+                    );
+                    this.camera.position.copy(this.player.getPosition()).add(offset);
+                    this.camera.lookAt(this.player.getPosition());
+                } else {
+                    this.camera.position.copy(this.player.getPosition());
+                    this.camera.position.y += CONFIG.camera.firstPersonOffset.y;
+                    
+                    const input = this.inputManager.getMovementInput();
+                    if (input.active) {
+                        const lookTarget = new THREE.Vector3(
+                            this.player.getPosition().x + input.x * 10,
+                            this.player.getPosition().y,
+                            this.player.getPosition().z + input.y * 10
+                        );
+                        this.camera.lookAt(lookTarget);
+                    }
+                }
+
+                // デバッグパネル更新
+                this.debugPanel.update();
+
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // ==========================================
+        // 起動
+        // ==========================================
+        window.onload = () => {
+            new Game();
+        };
+
+    </script>
+</body>
+
+</html>
