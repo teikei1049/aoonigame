@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>恐怖の洋館 〜りくくんと青鬼〜</title>
+    <title>りくくんとポコポコ青鬼：屋敷編</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
-            font-family: 'Creepster', 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
             touch-action: none;
         }
 
@@ -19,7 +19,6 @@
             height: 100vh;
         }
 
-        /* UIレイヤー */
         #ui-layer {
             position: absolute;
             top: 0;
@@ -27,32 +26,6 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 50;
-        }
-
-        /* ビネット効果 */
-        #vignette {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(0,0,0,0.8) 100%);
-            z-index: 10;
-        }
-
-        /* ダメージフラッシュ */
-        #damage-flash {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: rgba(255, 0, 0, 0);
-            z-index: 15;
-            transition: background 0.2s;
         }
 
         #message-box {
@@ -60,73 +33,30 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(20, 20, 20, 0.95);
+            background: linear-gradient(135deg, #FF6B9D, #FFC371);
             padding: 15px 30px;
-            border-radius: 8px;
+            border-radius: 25px;
             font-size: 20px;
             font-weight: bold;
-            color: #ff3333;
-            border: 3px solid #8B0000;
+            color: white;
+            border: 4px solid #FF1493;
             text-align: center;
             pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.6);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* スタミナゲージ */
-        #stamina-container {
-            position: absolute;
-            bottom: 120px;
-            left: 30px;
-            pointer-events: none;
-        }
-
-        #stamina-label {
-            color: #fff;
-            font-size: 14px;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-        }
-
-        #stamina-bar {
-            width: 200px;
-            height: 20px;
-            background: rgba(0,0,0,0.8);
-            border: 2px solid rgba(255,255,255,0.6);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        #stamina-fill {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, #4CAF50, #8BC34A);
-            transition: width 0.2s, background 0.3s;
-        }
-
-        #stamina-fill.low {
-            background: linear-gradient(to right, #FF5722, #FF9800);
-            animation: pulse 0.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* デバッグパネル */
         #debug-panel {
             position: absolute;
-            top: 60px;
+            top: 70px;
             right: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 12px;
             display: none;
             pointer-events: auto;
-            font-family: Arial, sans-serif;
         }
         
         #debug-toggle-btn {
@@ -135,43 +65,40 @@
             right: 10px;
             pointer-events: auto;
             font-size: 12px;
-            padding: 5px 10px;
-            background: rgba(0,0,0,0.7);
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
-            border: 1px solid #666;
+            border: none;
+            border-radius: 15px;
             cursor: pointer;
         }
 
-        /* 操作パネル */
         .joystick-wrapper {
             position: absolute;
             width: 120px;
             height: 120px;
             pointer-events: auto;
             display: none;
-            z-index: 60;
         }
 
         .joystick-base {
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 3px solid rgba(255,255,255,0.4);
-            border-radius: 50%
-;
+            background: rgba(255, 182, 193, 0.4);
+            border: 3px solid rgba(255, 105, 180, 0.6);
+            border-radius: 50%;
             position: relative;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
 
         .joystick-knob {
             width: 50px;
             height: 50px;
-            background: rgba(255, 255, 255, 0.8);
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
             border-radius: 50%;
             position: absolute;
             top: 35px;
             left: 35px;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            box-shadow: 0 2px 10px rgba(255, 20, 147, 0.5);
         }
 
         #buttons-zone {
@@ -179,45 +106,38 @@
             bottom: 30px;
             right: 30px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             pointer-events: auto;
-            z-index: 60;
         }
 
         .game-btn {
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            border: 3px solid #fff;
-            font-size: 24px;
+            border: none;
+            font-size: 28px;
             color: white;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             cursor: pointer;
+            transition: transform 0.2s;
         }
         
         .game-btn:active {
-            background: rgba(255,255,255,0.3);
-            transform: scale(0.95);
+            transform: scale(0.9);
         }
 
         #btn-action { 
-            background: rgba(76, 175, 80, 0.7); 
+            background: linear-gradient(135deg, #56CCF2, #2F80ED);
         }
 
-        #btn-dash {
-            background: rgba(33, 150, 243, 0.7);
-        }
-
-        /* オーバーレイ */
         #overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -227,31 +147,31 @@
         }
 
         #overlay-text {
-            color: #ff3333;
-            font-size: 32px;
+            color: white;
+            font-size: 36px;
             margin-bottom: 30px;
             text-align: center;
             line-height: 1.6;
-            text-shadow: 3px 3px 8px rgba(0,0,0,0.9), 0 0 20px rgba(255,51,51,0.8);
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
             font-weight: bold;
         }
 
         #start-btn {
             padding: 20px 50px;
             font-size: 26px;
-            background: linear-gradient(135deg, #8B0000, #DC143C);
+            background: linear-gradient(135deg, #FF6B9D, #FFC371);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 6px #5B0000, 0 0 20px rgba(220, 20, 60, 0.6);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
             font-weight: bold;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         #start-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 2px #5B0000;
+            box-shadow: 0 2px 10px rgba(255, 107, 157, 0.4);
         }
 
     </style>
@@ -261,80 +181,53 @@
 <body>
     <div id="game-container">
         <div id="ui-layer">
-            <div id="vignette"></div>
-            <div id="damage-flash"></div>
-            
             <div id="message-box">ミッション：おもちゃ を かたづけて！</div>
             
-            <div id="stamina-container">
-                <div id="stamina-label">スタミナ</div>
-                <div id="stamina-bar">
-                    <div id="stamina-fill"></div>
-                </div>
-            </div>
-            
-            <button id="debug-toggle-btn">🔧デバッグ</button>
+            <button id="debug-toggle-btn">🔧</button>
             <div id="debug-panel">
-                <button id="god-mode-btn">無敵モード: OFF</button><br>
-                <span id="debug-info"></span>
+                <button id="god-mode-btn">無敵モード: OFF</button>
             </div>
 
             <div id="buttons-zone">
                 <button id="btn-camera" class="game-btn">📷</button>
-                <button id="btn-dash" class="game-btn">🏃</button>
                 <button id="btn-action" class="game-btn">✋</button>
             </div>
         </div>
 
         <div id="overlay">
-            <div id="overlay-text">恐怖の洋館<br>〜りくくんと青鬼〜<br><small style="font-size:18px;">音量注意</small></div>
-            <button id="start-btn">入る...</button>
+            <div id="overlay-text">楽しい洋館<br>〜りくくんと青いお友達〜</div>
+            <button id="start-btn">スタート！</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // CONFIG
-        // ==========================================
         const CONFIG = {
             player: {
-                walkSpeed: 0.1,
-                runSpeed: 0.2,
-                runStaminaCost: 0.5,
-                staminaRegen: 0.3,
-                maxStamina: 100,
+                speed: 0.12,
                 radius: 0.3,
                 height: 0.8
             },
             enemy: {
-                walkSpeed: 0.045,
-                chaseSpeed: 0.08,
-                chaseDistance: 15,
-                catchDistance: 1.0,
-                loseTrackTime: 5000,
-                patrolPoints: [[6,6], [-6,6], [-6,-6], [6,-6]]
+                speed: 0.055,
+                chaseDistance: 12,
+                catchDistance: 0.8
             },
             world: {
                 wallSize: 2,
                 wallHeight: 4
-            },
-            sound: {
-                enabled: true
             }
         };
 
-        // ==========================================
-        // Sound Manager (Web Audio API)
-        // ==========================================
+        // サウンドマネージャー（楽しいBGM）
         class SoundManager {
             constructor() {
                 this.ctx = null;
-                this.sounds = {};
                 this.initialized = false;
+                this.bgmInterval = null;
             }
 
             init() {
-                if (this.initialized || !CONFIG.sound.enabled) return;
+                if (this.initialized) return;
                 try {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                     this.initialized = true;
@@ -343,17 +236,53 @@
                 }
             }
 
-            // 心拍音
-            playHeartbeat(intensity = 1.0) {
+            // 楽しいBGM（メロディループ）
+            playBGM() {
+                if (!this.initialized || this.bgmInterval) return;
+                
+                const melody = [523, 587, 659, 698, 784, 659, 523]; // C D E F G E C
+                let noteIndex = 0;
+                
+                const playNote = () => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.frequency.value = melody[noteIndex];
+                    osc.type = 'sine';
+                    
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.3);
+                    
+                    noteIndex = (noteIndex + 1) % melody.length;
+                };
+                
+                playNote();
+                this.bgmInterval = setInterval(playNote, 400);
+            }
+
+            stopBGM() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+            }
+
+            playItemGet() {
                 if (!this.initialized) return;
                 
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 
-                osc.frequency.value = 60 - (intensity * 20);
-                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.15);
                 
-                gain.gain.setValueAtTime(0.3 * intensity, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
                 
                 osc.connect(gain);
@@ -362,141 +291,32 @@
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.15);
             }
-
-            // フットステップ音
-            playFootstep(volume = 0.15) {
-                if (!this.initialized) return;
-                
-                const noise = this.ctx.createBufferSource();
-                const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.05, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = (Math.random() * 2 - 1) * 0.3;
-                }
-                
-                noise.buffer = buffer;
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 300;
-                
-                const gain = this.ctx.createGain();
-                gain.gain.value = volume;
-                
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                noise.start();
-            }
-
-            // アイテム取得音
-            playItemCollect() {
-                if (!this.initialized) return;
-                
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.1);
-                
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
-            }
-
-            // 怖い環境音（バックグラウンド）
-            playAmbience() {
-                if (!this.initialized || this.sounds.ambience) return;
-                
-                // 低周波のドローン
-                const osc1 = this.ctx.createOscillator();
-                const osc2 = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc1.frequency.value = 60;
-                osc2.frequency.value = 63; // わずかにずらしてビート効果
-                osc1.type = 'sawtooth';
-                osc2.type = 'sawtooth';
-                
-                gain.gain.value = 0.05;
-                
-                osc1.connect(gain);
-                osc2.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc1.start();
-                osc2.start();
-                
-                this.sounds.ambience = { osc1, osc2, gain };
-            }
-
-            stopAmbience() {
-                if (this.sounds.ambience) {
-                    this.sounds.ambience.osc1.stop();
-                    this.sounds.ambience.osc2.stop();
-                    delete this.sounds.ambience;
-                }
-            }
-
-            // ゲームオーバー時の恐怖音
-            playScream() {
-                if (!this.initialized) return;
-                
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        
-                        osc.frequency.setValueAtTime(800 - i * 200, this.ctx.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.3);
-                        osc.type = 'sawtooth';
-                        
-                        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                        
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        
-                        osc.start();
-                        osc.stop(this.ctx.currentTime + 0.3);
-                    }, i * 100);
-                }
-            }
         }
 
-        // ==========================================
-        // Texture Generator
-        // ==========================================
+        // テクスチャ生成（明るい色）
         class TextureGenerator {
             static createWoodTexture() {
                 const canvas = document.createElement('canvas');
-                canvas.width = 512; canvas.height = 512;
+                canvas.width = 512;
+                canvas.height = 512;
                 const ctx = canvas.getContext('2d');
                 
-                ctx.fillStyle = '#2C1810';
+                ctx.fillStyle = '#D2B48C'; // 明るい木目
                 ctx.fillRect(0, 0, 512, 512);
                 
-                ctx.strokeStyle = '#1A0F08';
-                ctx.lineWidth = 3;
-                for(let i=0; i<40; i++) {
+                ctx.strokeStyle = '#C19A6B';
+                ctx.lineWidth = 2;
+                for(let i=0; i<30; i++) {
                     ctx.beginPath();
                     ctx.moveTo(Math.random()*512, 0);
                     ctx.bezierCurveTo(Math.random()*512, 200, Math.random()*512, 400, Math.random()*512, 512);
                     ctx.stroke();
                 }
                 
-                ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-                ctx.lineWidth = 2;
                 for(let i=0; i<512; i+=64) {
-                    ctx.beginPath(); 
-                    ctx.moveTo(i, 0); 
-                    ctx.lineTo(i, 512); 
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, 512);
                     ctx.stroke();
                 }
                 
@@ -509,19 +329,14 @@
 
             static createWallTexture() {
                 const canvas = document.createElement('canvas');
-                canvas.width = 256; canvas.height = 256;
+                canvas.width = 256;
+                canvas.height = 256;
                 const ctx = canvas.getContext('2d');
                 
-                ctx.fillStyle = '#4A3428';
+                ctx.fillStyle = '#FFB6C1'; // ピンク
                 ctx.fillRect(0, 0, 256, 256);
                 
-                // ノイズ追加
-                for(let i=0; i<2000; i++) {
-                    ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.3})`;
-                    ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2);
-                }
-                
-                ctx.fillStyle = '#3A2818';
+                ctx.fillStyle = '#FF69B4';
                 ctx.fillRect(0, 240, 256, 16);
                 
                 const tex = new THREE.CanvasTexture(canvas);
@@ -529,15 +344,12 @@
             }
         }
 
-        // ==========================================
-        // Input Manager
-        // ==========================================
+        // 入力管理
         class InputManager {
             constructor() {
                 this.joystick = null;
                 this.touchId = null;
                 this.input = { x: 0, y: 0, active: false };
-                this.isDashing = false;
                 this.setup();
             }
 
@@ -573,25 +385,15 @@
                     for (let touch of e.changedTouches) {
                         if (touch.identifier === this.touchId) {
                             this.touchId = null;
-                            this.input.x = 0; this.input.y = 0; this.input.active = false;
+                            this.input.x = 0;
+                            this.input.y = 0;
+                            this.input.active = false;
                             if(this.joystick) this.joystick.wrapper.remove();
                             this.joystick = null;
                         }
                     }
                 };
                 document.addEventListener('touchend', end);
-                document.addEventListener('touchcancel', end);
-
-                // ダッシュボタン
-                const dashBtn = document.getElementById('btn-dash');
-                dashBtn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.isDashing = true;
-                });
-                dashBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    this.isDashing = false;
-                });
             }
 
             createJoystick(x, y) {
@@ -614,12 +416,9 @@
             }
 
             get() { return this.input; }
-            getDashing() { return this.isDashing; }
         }
 
-        // ==========================================
-        // Game Logic
-        // ==========================================
+        // ゲームロジック
         class Game {
             constructor() {
                 this.walls = [];
@@ -627,15 +426,6 @@
                 this.missionIndex = 0;
                 this.isPaused = true;
                 this.godMode = false;
-                this.stamina = CONFIG.player.maxStamina;
-                this.isTPS = true;
-                this.lastFootstepTime = 0;
-                
-                // 敵AI状態
-                this.enemyState = 'patrol'; // patrol, chase, search
-                this.enemyPatrolIndex = 0;
-                this.enemyLastSeenPos = null;
-                this.enemyLostTrackTime = 0;
                 
                 this.sound = new SoundManager();
                 
@@ -650,18 +440,24 @@
 
             initThree() {
                 this.scene = new THREE.Scene();
-                this.scene.fog = new THREE.FogExp2(0x0A0A0A, 0.09);
+                this.scene.background = new THREE.Color(0xE6F3FF); // 明るい青空
+                this.scene.fog = new THREE.Fog(0xE6F3FF, 20, 50); // 薄い霧
 
                 this.camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 100);
                 
                 this.renderer = new THREE.WebGLRenderer({ antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 document.getElementById('game-container').appendChild(this.renderer.domElement);
 
-                const ambient = new THREE.AmbientLight(0x303030, 0.3);
+                // 明るいライト
+                const ambient = new THREE.AmbientLight(0xFFFFFF, 0.9);
                 this.scene.add(ambient);
+
+                const directional = new THREE.DirectionalLight(0xFFFFAA, 0.6);
+                directional.position.set(10, 15, 5);
+                directional.castShadow = true;
+                this.scene.add(directional);
             }
 
             initWorld() {
@@ -669,7 +465,7 @@
                 const floorGeo = new THREE.PlaneGeometry(30, 30);
                 const floorMat = new THREE.MeshStandardMaterial({ 
                     map: TextureGenerator.createWoodTexture(),
-                    roughness: 0.9
+                    roughness: 0.8
                 });
                 const floor = new THREE.Mesh(floorGeo, floorMat);
                 floor.rotation.x = -Math.PI/2;
@@ -678,13 +474,13 @@
 
                 // 天井
                 const ceilGeo = new THREE.PlaneGeometry(30, 30);
-                const ceilMat = new THREE.MeshBasicMaterial({ color: 0x1A1A1A });
+                const ceilMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
                 const ceil = new THREE.Mesh(ceilGeo, ceilMat);
                 ceil.rotation.x = Math.PI/2;
                 ceil.position.y = CONFIG.world.wallHeight;
                 this.scene.add(ceil);
 
-                // 壁生成
+                // 壁
                 const map = [
                     [1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,1,0,0,0,0,1],
@@ -731,14 +527,9 @@
                 itemTypes.forEach((t, i) => {
                     const mesh = new THREE.Mesh(
                         t.geo,
-                        new THREE.MeshStandardMaterial({ 
-                            color: t.color, 
-                            emissive: t.color, 
-                            emissiveIntensity: 0.6,
-                            metalness: 0.5
-                        })
+                        new THREE.MeshStandardMaterial({ color: t.color, emissive: t.color, emissiveIntensity: 0.5 })
                     );
-                    mesh.position.set(t.pos[0], 0.3, t.pos[1]);
+                    mesh.position.set(t.pos[0], 0.2, t.pos[1]);
                     if(t.name === "ハブラシ") mesh.rotation.z = Math.PI/2;
                     
                     mesh.userData = { id: i, type: t };
@@ -764,71 +555,32 @@
                 const mat = new THREE.MeshStandardMaterial({ color: 0xFF9800 });
                 this.player = new THREE.Mesh(geo, mat);
                 this.player.position.set(0, 0.4, 0);
-                this.player.castShadow = true;
                 this.scene.add(this.player);
-
-                // 懐中電灯
-                this.flashLight = new THREE.SpotLight(0xFFE4B5, 2.5, 18, Math.PI/5, 0.6);
-                this.flashLight.position.set(0, 0.5, 0);
-                this.flashLight.target.position.set(0, 0, 1);
-                this.flashLight.castShadow = true;
-                this.flashLight.shadow.mapSize.width = 1024;
-                this.flashLight.shadow.mapSize.height = 1024;
-                
-                this.player.add(this.flashLight);
-                this.player.add(this.flashLight.target);
             }
 
             initEnemy() {
                 const group = new THREE.Group();
                 
-                // 青鬼の体（より大きく威圧的に）
-                const body = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.5, 0.6, 1.2, 16),
-                    new THREE.MeshStandardMaterial({ color: 0x5C6BC0, roughness: 0.3 })
-                );
-                body.position.y = 0.6;
-                
-                // 顔
                 const face = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.9, 32, 32),
-                    new THREE.MeshStandardMaterial({ color: 0x5C6BC0, roughness: 0.3 })
+                    new THREE.SphereGeometry(0.8, 32, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x87CEEB }) // 明るい青
                 );
-                face.position.y = 1.6;
-                face.scale.set(1, 1.3, 1);
+                face.position.y = 1.0;
+                face.scale.set(1, 1.4, 1);
                 
-                // 目（不気味に大きく）
-                const eyeW = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.3), 
-                    new THREE.MeshBasicMaterial({color:0xffffff})
-                );
-                const eyeB = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.1), 
-                    new THREE.MeshBasicMaterial({color:0x000000})
-                );
-                eyeW.position.set(-0.35, 1.8, 0.7); 
-                eyeB.position.set(-0.35, 1.8, 0.9);
+                const eyeW = new THREE.Mesh(new THREE.SphereGeometry(0.25), new THREE.MeshBasicMaterial({color:0xffffff}));
+                const eyeB = new THREE.Mesh(new THREE.SphereGeometry(0.08), new THREE.MeshBasicMaterial({color:0x000000}));
+                eyeW.position.set(-0.3, 1.2, 0.6);
+                eyeB.position.set(-0.3, 1.2, 0.82);
                 
-                const eyeW2 = eyeW.clone(); eyeW2.position.set(0.35, 1.8, 0.7);
-                const eyeB2 = eyeB.clone(); eyeB2.position.set(0.35, 1.8, 0.9);
+                const eyeW2 = eyeW.clone();
+                eyeW2.position.set(0.3, 1.2,0.6);
+                const eyeB2 = eyeB.clone();
+                eyeB2.position.set(0.3, 1.2, 0.82);
 
-                // 不気味な笑顔
-                const mouth = new THREE.Mesh(
-                    new THREE.TorusGeometry(0.3, 0.05, 8, 16, Math.PI),
-                    new THREE.MeshBasicMaterial({color: 0x000000})
-                );
-                mouth.position.set(0, 1.3, 0.85);
-                mouth.rotation.x = Math.PI;
-
-                group.add(body, face, eyeW, eyeB, eyeW2, eyeB2, mouth);
+                group.add(face, eyeW, eyeB, eyeW2, eyeB2);
                 group.position.set(6, 0, 6);
-                group.scale.set(1.3, 1.3, 1.3); // より大きく
                 
-                // 敵用ライト
-                const light = new THREE.PointLight(0x9C27B0, 2, 6);
-                light.position.y = 2;
-                group.add(light);
-
                 this.scene.add(group);
                 this.enemy = group;
             }
@@ -840,7 +592,7 @@
                     document.getElementById('overlay').style.display = 'none';
                     this.isPaused = false;
                     this.sound.init();
-                    this.sound.playAmbience();
+                    this.sound.playBGM();
                     this.reset();
                 };
 
@@ -849,17 +601,23 @@
                     this.checkMission();
                 });
                 
-                // 視点切り替え
+                let isTPS = true;
                 document.getElementById('btn-camera').onclick = () => {
-                    this.isTPS = !this.isTPS;
-                    this.player.visible = this.isTPS;
+                    isTPS = !isTPS;
+                    if(!isTPS) {
+                        this.camera.position.set(0, 0.6, 0);
+                        this.player.visible = false;
+                    } else {
+                        this.player.visible = true;
+                    }
+                    this.isTPS = isTPS;
                 };
 
-                // デバッグ
                 document.getElementById('debug-toggle-btn').onclick = () => {
                     const p = document.getElementById('debug-panel');
                     p.style.display = p.style.display === 'none' ? 'block' : 'none';
                 };
+                
                 document.getElementById('god-mode-btn').onclick = (e) => {
                     this.godMode = !this.godMode;
                     e.target.innerText = `無敵モード: ${this.godMode ? "ON" : "OFF"}`;
@@ -870,9 +628,6 @@
                 this.player.position.set(0, 0.4, 0);
                 this.enemy.position.set(6, 0, 6);
                 this.missionIndex = 0;
-                this.stamina = CONFIG.player.maxStamina;
-                this.enemyState = 'patrol';
-                this.enemyPatrolIndex = 0;
                 this.missions.forEach(m => m.visible = false);
                 this.missions[0].visible = true;
                 this.door.visible = true;
@@ -883,7 +638,7 @@
                 const types = ["おもちゃ", "ハブラシ", "バナナ", "カギ(ゴール)"];
                 const msg = this.missionIndex < types.length 
                     ? `さがして： ${types[this.missionIndex]}` 
-                    : "ドアへ逃げろ！";
+                    : "脱出せよ！";
                 document.getElementById('message-box').innerHTML = msg;
             }
 
@@ -891,7 +646,7 @@
                 if(this.missionIndex >= this.missions.length) return;
                 const target = this.missions[this.missionIndex];
                 if(target.visible && this.player.position.distanceTo(target.position) < 1.5) {
-                    this.sound.playItemCollect();
+                    this.sound.playItemGet();
                     this.missionIndex++;
                     target.visible = false;
                     if(this.missionIndex < this.missions.length) {
@@ -899,23 +654,15 @@
                         this.updateMessage();
                     } else {
                         this.door.visible = false;
-                        this.updateMessage();
                         setTimeout(() => {
                             if(!this.isPaused) {
-                                this.showVictory();
+                                this.isPaused = true;
+                                this.sound.stopBGM();
+                                alert("クリア！おめでとう！");
                             }
-                        }, 1000);
+                        }, 500);
                     }
                 }
-            }
-
-            showVictory() {
-                this.isPaused = true;
-                this.sound.stopAmbience();
-                document.getElementById('overlay').style.display = 'flex';
-                document.getElementById('overlay-text').innerHTML = 
-                    "脱出成功！<br><small style='font-size:20px;'>あなたは恐怖の館から<br>生還しました...</small>";
-                document.getElementById('start-btn').innerText = "もう一度遊ぶ";
             }
 
             checkCollision(newPos) {
@@ -931,111 +678,14 @@
                 return false;
             }
 
-            updateEnemyAI() {
-                const distToPlayer = this.enemy.position.distanceTo(this.player.position);
-
-                // 状態遷移
-                if (distToPlayer < CONFIG.enemy.chaseDistance) {
-                    this.enemyState = 'chase';
-                    this.enemyLastSeenPos = this.player.position.clone();
-                    this.enemyLostTrackTime = Date.now();
-                } else if (this.enemyState === 'chase') {
-                    if (Date.now() - this.enemyLostTrackTime > CONFIG.enemy.loseTrackTime) {
-                        this.enemyState = 'patrol';
-                    } else {
-                        this.enemyState = 'search';
-                    }
-                }
-
-                let targetPos;
-                let speed;
-
-                switch(this.enemyState) {
-                    case 'patrol':
-                        const patrol = CONFIG.enemy.patrolPoints[this.enemyPatrolIndex];
-                        targetPos = new THREE.Vector3(patrol[0], 0, patrol[1]);
-                        speed = CONFIG.enemy.walkSpeed;
-                        
-                        if (this.enemy.position.distanceTo(targetPos) < 0.5) {
-                            this.enemyPatrolIndex = (this.enemyPatrolIndex + 1) % CONFIG.enemy.patrolPoints.length;
-                        }
-                        break;
-
-                    case 'chase':
-                        targetPos = this.player.position.clone();
-                        speed = CONFIG.enemy.chaseSpeed;
-                        break;
-
-                    case 'search':
-                        targetPos = this.enemyLastSeenPos;
-                        speed = CONFIG.enemy.walkSpeed;
-                        break;
-                }
-
-                // 移動
-                const dir = new THREE.Vector3().subVectors(targetPos, this.enemy.position);
-                dir.y = 0;
-                dir.normalize();
-
-                const nextPos = this.enemy.position.clone().add(dir.multiplyScalar(speed));
-
-                let hitWall = false;
-                const enemyBox = new THREE.Box3().setFromCenterAndSize(nextPos, new THREE.Vector3(1.2, 1.5, 1.2));
-                for(const wall of this.walls) {
-                    if(wall.visible && wall.userData.box && enemyBox.intersectsBox(wall.userData.box)) {
-                        hitWall = true; 
-                        break;
-                    }
-                }
-
-                if(!hitWall) {
-                    this.enemy.position.copy(nextPos);
-                    this.enemy.lookAt(targetPos);
-                }
-
-               // 浮遊アニメーション
-                this.enemy.position.y = Math.abs(Math.sin(Date.now() * 0.003)) * 0.4;
-
-                // フットステップ音（敵）
-                if(this.enemyState === 'chase' && Date.now() - this.lastEnemyFootstep > 400) {
-                    this.sound.playFootstep(0.2);
-                    this.lastEnemyFootstep = Date.now();
-                }
-            }
-
-            updateStamina(delta) {
-                const staminaFill = document.getElementById('stamina-fill');
-                
-                if (this.input.getDashing() && this.input.get().active && this.stamina > 0) {
-                    this.stamina = Math.max(0, this.stamina - CONFIG.player.runStaminaCost);
-                } else {
-                    this.stamina = Math.min(CONFIG.player.maxStamina, this.stamina + CONFIG.player.staminaRegen);
-                }
-
-                const staminaPercent = (this.stamina / CONFIG.player.maxStamina) * 100;
-                staminaFill.style.width = staminaPercent + '%';
-                
-                if (staminaPercent < 30) {
-                    staminaFill.classList.add('low');
-                } else {
-                    staminaFill.classList.remove('low');
-                }
-            }
-
             animate() {
                 requestAnimationFrame(() => this.animate());
                 if(this.isPaused) return;
 
-                const now = Date.now();
-
-                // プレイヤー移動
                 const input = this.input.get();
                 if(input.active) {
-                    const isDashing = this.input.getDashing() && this.stamina > 5;
-                    const speed = isDashing ? CONFIG.player.runSpeed : CONFIG.player.walkSpeed;
-                    
-                    const moveX = input.x * speed;
-                    const moveZ = input.y * speed;
+                    const moveX = input.x * CONFIG.player.speed;
+                    const moveZ = input.y * CONFIG.player.speed;
                     
                     let nextPos = this.player.position.clone();
                     nextPos.x += moveX;
@@ -1051,30 +701,10 @@
 
                     const angle = Math.atan2(input.x, input.y);
                     this.player.rotation.y = angle;
-                    
-                   // 懐中電灯の向き
-                    this.flashLight.target.position.set(
-                        this.player.position.x + Math.sin(angle),
-                        this.player.position.y,
-                        this.player.position.z + Math.cos(angle)
-                    );
-                    this.flashLight.target.updateMatrixWorld();
-
-                    // フットステップ音
-                    if (now - this.lastFootstepTime > (isDashing ? 250 : 400)) {
-                        this.sound.playFootstep(isDashing ? 0.2 : 0.12);
-                        this.lastFootstepTime = now;
-                    }
-
-                    // 歩行アニメーション
-                    this.player.position.y = 0.4 + Math.abs(Math.sin(now * (isDashing ? 0.015 : 0.01))) * 0.05;
                 }
 
-                // スタミナ更新
-                this.updateStamina();
-
-                // カメラ追従
-                if(this.isTPS) {
+                // カメラ
+                if(this.isTPS !== false) {
                     this.camera.position.set(
                         this.player.position.x,
                         this.player.position.y + 6,
@@ -1083,50 +713,39 @@
                     this.camera.lookAt(this.player.position);
                 } else {
                     this.camera.position.copy(this.player.position);
-                    this.camera.position.y += 0.5;
+                    this.camera.position.y += 0.4;
                     this.camera.rotation.y = this.player.rotation.y + Math.PI;
                 }
 
                 // 敵AI
-                this.updateEnemyAI();
-
-                // 心拍音（敵が近いほど激しく）
                 const dist = this.enemy.position.distanceTo(this.player.position);
-                if (dist < 10) {
-                    const intensity = 1 - (dist / 10);
-                    if (now - (this.lastHeartbeat || 0) > (800 - intensity * 600)) {
-                        this.sound.playHeartbeat(intensity);
-                        this.lastHeartbeat = now;
+                if(dist < CONFIG.enemy.chaseDistance) {
+                    const dir = new THREE.Vector3().subVectors(this.player.position, this.enemy.position).normalize();
+                    const nextEnemyPos = this.enemy.position.clone().add(dir.multiplyScalar(CONFIG.enemy.speed));
+                    
+                    let hitWall = false;
+                    const enemyBox = new THREE.Box3().setFromCenterAndSize(nextEnemyPos, new THREE.Vector3(1.0, 1.0, 1.0));
+                    for(const wall of this.walls) {
+                        if(wall.visible && wall.userData.box && enemyBox.intersectsBox(wall.userData.box)) {
+                            hitWall = true;
+                            break;
+                        }
                     }
-                }
 
-                // ゲームオーバー判定
-                if(dist < CONFIG.enemy.catchDistance && !this.godMode) {
-                    this.isPaused = true;
-                    this.sound.playScream();
-                    this.sound.stopAmbience();
+                    if(!hitWall) {
+                        this.enemy.position.copy(nextEnemyPos);
+                        this.enemy.lookAt(this.player.position);
+                    }
                     
-                    // ダメージフラッシュ
-                    const flash = document.getElementById('damage-flash');
-                    flash.style.background = 'rgba(255, 0, 0, 0.7)';
-                    setTimeout(() => flash.style.background = 'rgba(255, 0, 0, 0)', 500);
-                    
-                    setTimeout(() => {
+                    this.enemy.position.y = Math.abs(Math.sin(Date.now()*0.005)) * 0.3;
+
+                    if(dist < CONFIG.enemy.catchDistance && !this.godMode) {
+                        this.isPaused = true;
+                        this.sound.stopBGM();
                         document.getElementById('overlay').style.display = 'flex';
-                        document.getElementById('overlay-text').innerHTML = 
-                            "つかまった！<br><small style='font-size:22px;'>GAME OVER</small>";
+                        document.getElementById('overlay-text').innerHTML = "つかまった！<br>もう一回がんばろう！";
                         document.getElementById('start-btn').innerText = "もう一回";
-                    }, 600);
-                }
-
-                // デバッグ情報
-                const debugInfo = document.getElementById('debug-info');
-                if (debugInfo) {
-                    debugInfo.innerHTML = `
-                        敵状態: ${this.enemyState}<br>
-                        距離: ${dist.toFixed(1)}m<br>
-                        スタミナ: ${this.stamina.toFixed(0)}
-                    `;
+                    }
                 }
 
                 this.renderer.render(this.scene, this.camera);
